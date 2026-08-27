@@ -1,0 +1,41 @@
+using Microsoft.AspNetCore.Mvc;
+
+namespace sample_dotnet_api.Controllers;
+
+[ApiController]
+[Route("api")]
+public class VulnerableController : ControllerBase
+{
+    // VULNERABILITY: Hardcoded connection string
+    private readonly string _connectionString = "Server=localhost;Database=mydb;User Id=admin;Password=Admin123!;";
+
+    // VULNERABILITY: SQL Injection
+    [HttpGet("search")]
+    public IActionResult Search(string query)
+    {
+        var sql = $"SELECT * FROM products WHERE name LIKE '%{query}%'";
+        return Ok("Executing: " + sql);
+    }
+
+    // VULNERABILITY: XSS
+    [HttpGet("profile")]
+    public IActionResult Profile(string username)
+    {
+        return Content($"<h1>Welcome, {username}!</h1>", "text/html");
+    }
+
+    // VULNERABILITY: Insecure Deserialization
+    [HttpPost("deserialize")]
+    public IActionResult Deserialize([FromBody] string data)
+    {
+        var obj = System.Text.Json.JsonSerializer.Deserialize<object>(data);
+        return Ok(obj);
+    }
+
+    // Health check
+    [HttpGet("health")]
+    public IActionResult Health()
+    {
+        return Ok("OK");
+    }
+}
